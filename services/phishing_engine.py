@@ -1,44 +1,59 @@
+import re
+
+PHISHING_PATTERNS = [
+    r"urgent action required",
+    r"verify your account",
+    r"password will expire",
+    r"login immediately",
+    r"click here",
+    r"account suspended",
+    r"unauthorized login",
+    r"confirm identity"
+]
+
+URL_PATTERN = r"https?://[^\s]+"
+
 class PhishingEngine:
 
-    def analyze(self, text: str, url: str = None):
+    def analyze(self, text, url=None):
 
-        score = 0
-        indicators = []
+    score = 0
+    indicators = []
 
-        text_lower = text.lower()
+    text_lower = text.lower()
 
-        # 1. Urgency patterns
-        urgency_keywords = ["urgent", "immediately", "act now", "limited time"]
-        if any(word in text_lower for word in urgency_keywords):
-            score += 25
-            indicators.append("Urgency language detected")
+    # pattern detection
+    for pattern in PHISHING_PATTERNS:
+        if re.search(pattern, text_lower):
+            score += 15
+            indicators.append(f"Pattern matched: {pattern}")
 
-        # 2. Credential requests
-        if any(word in text_lower for word in ["password", "login", "verify account"]):
-            score += 35
-            indicators.append("Credential request detected")
+    # urgency
+    urgency_words = ["immediately", "urgent", "now", "asap"]
+    if any(word in text_lower for word in urgency_words):
+        score += 10
+        indicators.append("Urgency language detected")
 
-        # 3. Money / scam signals
-        if any(word in text_lower for word in ["bank", "payment", "invoice", "suspended"]):
-            score += 20
-            indicators.append("Financial scam indicators")
+    # credential harvesting
+    if "password" in text_lower or "login" in text_lower:
+        score += 20
+        indicators.append("Credential-related request detected")
 
-        # 4. URL check (basic)
-        if url:
-            if "http" in url and not url.startswith("https"):
-                score += 20
-                indicators.append("Non-secure HTTP link")
+    # URL detection
+    if re.search(URL_PATTERN, text):
+        score += 25
+        indicators.append("URL detected")
 
-        # Final classification
-        if score >= 70:
-            risk = "phishing"
-        elif score >= 40:
-            risk = "suspicious"
-        else:
-            risk = "safe"
+    # final classification
+    if score >= 70:
+        risk = "phishing"
+    elif score >= 40:
+        risk = "suspicious"
+    else:
+        risk = "safe"
 
-        return {
-            "risk_level": risk,
-            "score": score,
-            "indicators": indicators
-        }
+    return {
+        "risk_level": risk,
+        "score": score,
+        "indicators": indicators
+    }
