@@ -17,10 +17,10 @@ class PhishingEngine:
 
     def analyze(self, text, url=None):
 
-    score = 0
-    indicators = []
+        score = 0
+        indicators = []
 
-    text_lower = text.lower()
+        text_lower = text.lower()
 
     # pattern detection
     for pattern in PHISHING_PATTERNS:
