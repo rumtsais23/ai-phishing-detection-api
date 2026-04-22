@@ -9,5 +9,17 @@ app.register_blueprint(phishing_bp)
 app.register_blueprint(security_bp)
 app.register_blueprint(analyze_bp)
 
+@app.route("/")
+def home():
+    return {
+        "status": "running",
+        "service": "AI Phishing Detection API",
+        "endpoints": [
+            "/phishing-analyze",
+            "/security-scan",
+            "/ai-analyze"
+        ]
+    }
+
 if __name__ == "__main__":
     app.run(debug=True)
