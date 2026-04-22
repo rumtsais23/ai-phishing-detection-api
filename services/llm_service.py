@@ -1,46 +1,67 @@
 import os
 from openai import OpenAI
 
-api_key = os.getenv("OPENAI_API_KEY")
-
-if not api_key:
-    raise Exception("Missing OPENAI_API_KEY")
-
-client = OpenAI(api_key=api_key)
-
 class LLMService:
 
-    def analyze(self, text: str):
+    def __init__(self):
+        api_key = os.getenv("OPENAI_API_KEY")
 
-        prompt = f"""
-You are a cybersecurity phishing detection expert.
+        # safety check (important for production systems)
+        if api_key:
+            self.client = OpenAI(api_key=api_key)
+        else:
+            self.client = None
 
-Analyze this message and detect phishing risk:
+    def analyze(self, text):
 
-Text:
+        # 1. Try real OpenAI call
+        try:
+            if self.client:
+
+                response = self.client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"""
+You are a cybersecurity AI assistant.
+
+Analyze if this text is phishing or malicious:
+
 {text}
 
 Return:
-- risk explanation
-- phishing indicators
-- confidence (0-100)
+- classification
+- short explanation
 """
+                        }
+                    ]
+                )
 
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}]
-            )
-
-            return {
-                "source": "openai",
-                "analysis": response.choices[0].message.content
-            }
+                return {
+                    "analysis": response.choices[0].message.content,
+                    "source": "openai"
+                }
 
         except Exception as e:
-            # 🔥 FALLBACK (МНОГО ВАЖНО)
-            return {
-                "source": "mock",
-                "analysis": f"[MOCK] Potential phishing detected in: {text}",
-                "note": "OpenAI quota exceeded, using fallback"
-            }
+            # fallback triggered if quota / API fails
+            return self._fallback(text, str(e))
+
+        # 2. If no API key or failure → fallback
+        return self._fallback(text, "no_openai_key")
+
+    def _fallback(self, text, reason):
+
+        # deterministic fallback (important for demo stability)
+        keywords = ["password", "login", "urgent", "verify", "click"]
+
+        risk = "safe"
+        if any(k in text.lower() for k in keywords):
+            risk = "suspicious"
+
+        return {
+            "analysis": f"[FALLBACK MODE] Basic heuristic analysis applied to: {text}",
+            "classification": risk,
+            "source": "fallback",
+            "reason": reason
+        }

@@ -17,43 +17,43 @@ class PhishingEngine:
 
     def analyze(self, text, url=None):
 
-    score = 0
-    indicators = []
+        score = 0
+        indicators = []
 
-    text_lower = text.lower()
+        text_lower = text.lower()
 
-    # pattern detection
-    for pattern in PHISHING_PATTERNS:
-        if re.search(pattern, text_lower):
-            score += 15
-            indicators.append(f"Pattern matched: {pattern}")
+        # pattern detection
+        for pattern in PHISHING_PATTERNS:
+            if re.search(pattern, text_lower):
+                score += 15
+                indicators.append(f"Pattern matched: {pattern}")
 
-    # urgency
-    urgency_words = ["immediately", "urgent", "now", "asap"]
-    if any(word in text_lower for word in urgency_words):
-        score += 10
-        indicators.append("Urgency language detected")
+        # urgency
+        urgency_words = ["immediately", "urgent", "now", "asap"]
+        if any(word in text_lower for word in urgency_words):
+            score += 10
+            indicators.append("Urgency language detected")
 
-    # credential harvesting
-    if "password" in text_lower or "login" in text_lower:
-        score += 20
-        indicators.append("Credential-related request detected")
+        # credential harvesting
+        if "password" in text_lower or "login" in text_lower:
+            score += 20
+            indicators.append("Credential-related request detected")
 
-    # URL detection
-    if re.search(URL_PATTERN, text):
-        score += 25
-        indicators.append("URL detected")
+        # URL detection
+        if re.search(URL_PATTERN, text):
+            score += 25
+            indicators.append("URL detected")
 
-    # final classification
-    if score >= 70:
-        risk = "phishing"
-    elif score >= 40:
-        risk = "suspicious"
-    else:
-        risk = "safe"
+        # final classification
+        if score >= 70:
+            risk = "phishing"
+        elif score >= 40:
+            risk = "suspicious"
+        else:
+            risk = "safe"
 
-    return {
-        "risk_level": risk,
-        "score": score,
-        "indicators": indicators
-    }
+        return {
+            "risk_level": risk,
+            "score": score,
+            "indicators": indicators
+        }
