@@ -1,18 +1,3 @@
-import re
-
-PHISHING_PATTERNS = [
-    r"urgent action required",
-    r"verify your account",
-    r"password will expire",
-    r"login immediately",
-    r"click here",
-    r"account suspended",
-    r"unauthorized login",
-    r"confirm identity"
-]
-
-URL_PATTERN = r"https?://[^\s]+"
-
 class PhishingEngine:
 
     def analyze(self, text, url=None):
